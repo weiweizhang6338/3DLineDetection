@@ -1,28 +1,28 @@
-# set project's name
-PROJECT(LineFromPointCloud)
+cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-###############################################################################
-# CMake settings
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.3)
+project(LineFromPointCloud)
 
+find_package(PCL 1.8 REQUIRED)
+find_package(OpenCV REQUIRED)
 # OpenMP
-FIND_PACKAGE(OpenMP)
-IF(OPENMP_FOUND)
-	OPTION(WITH_OPENMP "Whether to use parallel processing capabilities of OPENMP. ON/OFF" ON)
-ENDIF(OPENMP_FOUND)
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
-IF(OPENMP_FOUND AND WITH_OPENMP)
-	MESSAGE(STATUS "With OpenMP ")
-	SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMAX_OPENMP_NUM_THREADS=${PROCESSOR_COUNT} -DOPENMP_NUM_THREADS=${PROCESSOR_COUNT} ${OpenMP_CXX_FLAGS} -DOPENMP")
-	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMAX_OPENMP_NUM_THREADS=${PROCESSOR_COUNT} -DOPENMP_NUM_THREADS=${PROCESSOR_COUNT} ${OpenMP_CXX_FLAGS} ${OpenMP_C_FLAGS} -DOPENMP")
-ELSE(OPENMP_FOUND AND WITH_OPENMP)
-	MESSAGE(STATUS "Without OpenMP")
-	SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMAX_OPENMP_NUM_THREADS=1 -DOPENMP_NUM_THREADS=1")
-	SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMAX_OPENMP_NUM_THREADS=1 -DOPENMP_NUM_THREADS=1")
-ENDIF(OPENMP_FOUND AND WITH_OPENMP)
+include_directories(
+  ${PCL_INCLUDE_DIRS}
+)
 
-# OpenCV
-#SET(OpenCV_DIR "E:/installer/opencv/build")
-FIND_PACKAGE(OpenCV REQUIRED)
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
-ADD_SUBDIRECTORY(src)
+add_executable (${PROJECT_NAME}
+  src/main.cpp
+	src/LineDetection3D.cpp
+	src/CommonFunctions.cpp
+)
+
+target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
